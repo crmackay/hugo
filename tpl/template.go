@@ -82,6 +82,9 @@ func New() Template {
 
 	localTemplates = &templates.Template
 
+	for k, v := range funcMap {
+		amber.FuncMap[k] = v
+	}
 	templates.Funcs(funcMap)
 	templates.LoadEmbedded()
 	return templates
@@ -190,13 +193,14 @@ func (t *GoHTMLTemplate) AddTemplateFile(name, baseTemplatePath, path string) er
 	ext := filepath.Ext(path)
 	switch ext {
 	case ".amber":
+		templateName := strings.TrimSuffix(name, filepath.Ext(name)) + ".html"
 		compiler := amber.New()
 		// Parse the input file
 		if err := compiler.ParseFile(path); err != nil {
-			return nil
+			return err
 		}
 
-		if _, err := compiler.CompileWithTemplate(t.New(name)); err != nil {
+		if _, err := compiler.CompileWithTemplate(t.New(templateName)); err != nil {
 			return err
 		}
 	case ".ace":
@@ -300,15 +304,21 @@ func (t *GoHTMLTemplate) loadTemplates(absPath string, prefix string) {
 					//   2. <current-path>/baseof.ace
 					//   3. _default/<template-name>-baseof.ace, e.g. list-baseof.ace.
 					//   4. _default/baseof.ace
+					//   5. <themedir>/layouts/_default/<template-name>-baseof.ace
+					//   6. <themedir>/layouts/_default/baseof.ace
 
 					currBaseAceFilename := fmt.Sprintf("%s-%s", helpers.Filename(path), baseAceFilename)
 					templateDir := filepath.Dir(path)
+					themeDir := helpers.GetThemeDir()
 
 					pathsToCheck := []string{
 						filepath.Join(templateDir, currBaseAceFilename),
 						filepath.Join(templateDir, baseAceFilename),
 						filepath.Join(absPath, "_default", currBaseAceFilename),
-						filepath.Join(absPath, "_default", baseAceFilename)}
+						filepath.Join(absPath, "_default", baseAceFilename),
+						filepath.Join(themeDir, "layouts", "_default", currBaseAceFilename),
+						filepath.Join(themeDir, "layouts", "_default", baseAceFilename),
+					}
 
 					for _, pathToCheck := range pathsToCheck {
 						if ok, err := helpers.Exists(pathToCheck, hugofs.OsFs); err == nil && ok {

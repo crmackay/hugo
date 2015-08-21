@@ -202,9 +202,8 @@ func doTestPageMenuWithIdentifier(t *testing.T, menuPageSources []source.ByteSou
 	assert.NotNil(t, me1)
 	assert.NotNil(t, me2)
 
-	fmt.Println("me1:", me1.URL, "me2:", me2.URL)
-	assert.True(t, strings.Contains(me1.URL, "doc1"))
-	assert.True(t, strings.Contains(me2.URL, "doc2"))
+	assert.True(t, strings.Contains(me1.URL, "doc1"), me1.URL)
+	assert.True(t, strings.Contains(me2.URL, "doc2") || strings.Contains(me2.URL, "doc3"), me2.URL)
 
 }
 
@@ -242,8 +241,8 @@ func doTestPageMenuWithDuplicateName(t *testing.T, menuPageSources []source.Byte
 	assert.NotNil(t, me1)
 	assert.NotNil(t, me2)
 
-	assert.True(t, strings.Contains(me1.URL, "doc1"))
-	assert.True(t, strings.Contains(me2.URL, "doc2"))
+	assert.True(t, strings.Contains(me1.URL, "doc1"), me1.URL)
+	assert.True(t, strings.Contains(me2.URL, "doc2") || strings.Contains(me2.URL, "doc3"), me2.URL)
 
 }
 
@@ -472,7 +471,7 @@ func TestHomeNodeMenu(t *testing.T) {
 		{"main", homeMenuEntry, true, false},
 		{"doesnotexist", homeMenuEntry, false, false},
 		{"main", &MenuEntry{Name: "Somewhere else", URL: "/somewhereelse"}, false, false},
-		{"grandparent", findTestMenuEntryByID(s, "grandparent", "grandparentId"), false, false},
+		{"grandparent", findTestMenuEntryByID(s, "grandparent", "grandparentId"), false, true},
 		{"grandparent", findTestMenuEntryByID(s, "grandparent", "parentId"), false, true},
 		{"grandparent", findTestMenuEntryByID(s, "grandparent", "grandchildId"), true, false},
 	} {
